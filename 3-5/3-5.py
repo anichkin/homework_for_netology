@@ -1,28 +1,11 @@
 import math
-import requests
-from xml.etree.ElementTree import fromstring
+import osa
 
 
 def convert_temperature(temperature):
-    response = requests.post(
-        'http://www.webservicex.net/ConvertTemperature.asmx',
-        headers={
-            'Content-Type': 'text/xml'
-        },
-        data=('<?xml version="1.0" encoding="utf-8"?>\n'
-              '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
-              'xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">\n '
-              '  <soap:Body>\n'
-              '    <ConvertTemp xmlns="http://www.webserviceX.NET/">\n'
-              '      <Temperature>') + temperature + ('</Temperature>\n'
-              '      <FromUnit>degreeFahrenheit</FromUnit>\n'
-              '      <ToUnit>degreeCelsius</ToUnit>\n'
-              '    </ConvertTemp>\n'
-              '  </soap:Body>\n'
-              '</soap:Envelope>')
-
-    )
-    return float(fromstring(response.text)[0][0][0].text)
+    client = osa.Client("http://www.webservicex.net/ConvertTemperature.asmx?WSDL")
+    result = client.service.ConvertTemp(Temperature=temperature, FromUnit='degreeFahrenheit', ToUnit='degreeCelsius')
+    return result
 
 
 def average_temperature():
@@ -38,29 +21,10 @@ def average_temperature():
 
 
 def convert_currency(currency_in, currency_out, amount):
-    response = requests.post(
-        'https://fx.currencysystem.com/webservices/CurrencyServer4.asmx',
-        headers={
-            'Content-Type': 'text/xml',
-        },
-        data=('<?xml version="1.0" encoding="utf-8"?>\n'
-              '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
-              'xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">\n '
-              '  <soap:Body>\n'
-              '    <ConvertToNum xmlns="http://webservices.cloanto.com/currencyserver/">\n'
-              '      <licenseKey></licenseKey>\n'
-              '      <fromCurrency>') + currency_in + ('</fromCurrency>\n'
-              '      <toCurrency>') + currency_out + ('</toCurrency>\n'
-              '      <amount>') + amount + ('</amount>\n'
-              '      <rounding>true</rounding>\n'
-              '      <date></date>\n'
-              '      <type></type>\n'
-              '    </ConvertToNum>\n'
-              '  </soap:Body>\n'
-              '</soap:Envelope>\n')
-
-    )
-    return float(fromstring(response.text)[0][0][0].text)
+    client = osa.Client("https://fx.currencysystem.com/webservices/CurrencyServer4.asmx?WSDL")
+    result = client.service.ConvertToNum(licenseKey=None, fromCurrency=currency_in, toCurrency=currency_out,
+                                         amount=amount, rounding='true', date=None, type=None)
+    return result
 
 
 def travel_cost():
@@ -71,25 +35,9 @@ def travel_cost():
 
 
 def travel_lenght(lenght):
-    response = requests.post(
-        'http://www.webservicex.net/length.asmx',
-        headers={
-            'Content-Type': 'text/xml',
-        },
-        data=('<?xml version="1.0" encoding="utf-8"?>\n'
-              '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
-              'xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">\n '
-              '  <soap:Body>\n'
-              '    <ChangeLengthUnit xmlns="http://www.webserviceX.NET/">\n'
-              '      <LengthValue>') + lenght + ('</LengthValue>\n'
-              '      <fromLengthUnit>Miles</fromLengthUnit>\n'
-              '      <toLengthUnit>Kilometers</toLengthUnit>\n'
-              '    </ChangeLengthUnit>\n'
-              '  </soap:Body>\n'
-              '</soap:Envelope>')
-
-    )
-    return float(fromstring(response.text)[0][0][0].text)
+    client = osa.Client("http://www.webservicex.net/length.asmx?WSDL")
+    result = client.service.ChangeLengthUnit(LengthValue=lenght, fromLengthUnit='Miles', toLengthUnit='Kilometers')
+    return result
 
 
 def travel_lenght_in_km():
