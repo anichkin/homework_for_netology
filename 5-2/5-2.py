@@ -41,9 +41,6 @@ class LinkedList:
             yield current.data
             current = current.next
 
-    # def reverse(self) -> None:
-    #     raise NotImplementedError
-
     def reverse(self):
         previous = None
         current = self.head
