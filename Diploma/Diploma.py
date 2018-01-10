@@ -1,4 +1,5 @@
 import requests
+import time
 
 TOKEN = '5dfd6b0dee902310df772082421968f4c06443abecbc082a8440cb18910a56daca73ac8d04b25154a1128'
 VERSION = '5.69'
@@ -87,39 +88,66 @@ def response(friends_list):
     }
     response = requests.get('https://api.vk.com/method/groups.isMember', params)
     response_json = response.json()
-    sssss = 0
-    for member in response_json['response']:
-        if member['member']:
-            print('группа', group, 'не уникальна')
-            break
-        else:
-            print('.', end=' ')
-    if not member['member']:
-        return group
+    if 'response' in response_json.keys():
+        for member in response_json['response']:
+            if member['member']:
+                return 0
+            else:
+                print('.', end=' ')
+        if not member['member']:
+            return group
 
 
 def unique_group2(friend_list, group, VERSION):
-    if len(friend_list) > 25:
-        split_friend_list = [friend_list[d:d + 25] for d in range(0, len(friend_list), 25)]
+    if len(friend_list) > 300:
+        split_friend_list = [friend_list[d:d + 300] for d in range(0, len(friend_list), 300)]
         for list in split_friend_list:
             t = 0
             friends_list = ((str(list)).replace('[', "'")).replace(']', "'")
-            if not response(friends_list):
+            result = response(friends_list)
+            if not result:
                 t == 0
+                print('группа', group, 'не уникальна')
                 break
             else:
                 t += 1
-    if t != 0:
-        print('группа уникальна', group)
+        if t != 0:
+            print('группа уникальна', group)
+            return group
 
 
     else:
         friends_list = ((str(friend_list)).replace('[', "'")).replace(']', "'")
-        response(friends_list)
+        result = response(friends_list)
+        if not result:
+            print('группа', group, 'не уникальна')
+        else:
+            print('группа уникальна', group)
+            return group
 
-
+listtt = []
 for group in group_list:
-    unique_group2(friend_list, group, VERSION)
+    if unique_group2(friend_list, group, VERSION):
+        listtt.append(unique_group2(friend_list, group, VERSION))
+print(listtt)
+listt = ((str(listtt)).replace('[', "'")).replace(']', "'")
+params = {
+        'group_ids': listt,
+        'fields': 'members_count',
+        'v': VERSION
+    }
+response = requests.get('https://api.vk.com/method/groups.getById', params)
+response_json = response.json()
+print(response_json)
+
+
+
+
+
+
+
+
+
 
 fried_list = get_friends_list(get_ids('papapapokerface', VERSION), VERSION)
 group_list = get_group_list('15590964', VERSION)
