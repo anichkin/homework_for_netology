@@ -69,9 +69,10 @@ def unique_group(friend_list, group, version, test=0):
             if not result:
                 print()
                 print('группа', group, 'не уникальна')
-                break
+                return False
             else:
                 test += 1
+                continue
         if test != 0:
             print()
             print('группа', group, 'УНИКАЛЬНА')
@@ -94,7 +95,9 @@ def group_json(group_list, friend_list, version):
     for group in group_list:
         if unique_group(friend_list, group, version):
             group_list_for_json.append(group)
-    group_list_for_json = ((str(group_list_for_json)).replace('[', "'")).replace(']', "'")
+        else:
+            continue
+    group_list_for_json = ((str(group_list_for_json)).replace('[', " ")).replace(']', " ")
     params = {
         'group_ids': group_list_for_json,
         'fields': 'members_count',
@@ -103,7 +106,6 @@ def group_json(group_list, friend_list, version):
     response = requests.get('https://api.vk.com/method/groups.getById', params)
     response_json = response.json()
     groups = response_json['response']
-    print(groups)
     with open('group.json', 'w', encoding='utf-8') as f:
         json.dump(groups, f, indent=2, ensure_ascii=False)
 
