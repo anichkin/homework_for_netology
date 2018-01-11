@@ -64,7 +64,7 @@ def unique_group(friend_list, group, version, test=0):
     if len(friend_list) > 300:
         split_friend_list = [friend_list[d:d + 300] for d in range(0, len(friend_list), 300)]
         for list in split_friend_list:
-            friends_list = ((str(list)).replace('[', "'")).replace(']', "'")
+            friends_list = ((str(list)).replace('[', " ")).replace(']', " ")
             result = response(friends_list, group, version)
             if not result:
                 print()
@@ -79,7 +79,7 @@ def unique_group(friend_list, group, version, test=0):
             return group
 
     else:
-        friends_list = ((str(friend_list)).replace('[', "'")).replace(']', "'")
+        friends_list = ((str(friend_list)).replace('[', " ")).replace(']', " ")
         result = response(friends_list, group, version)
         if not result:
             print()
@@ -118,6 +118,7 @@ def program():
     friend_list = get_friends_list(user_id, version)
     group_list = get_group_list(user_id, version, token)
     group_json(group_list, friend_list, version)
+    print('список уникальных групп в файле group.json')
 
 
 program()
