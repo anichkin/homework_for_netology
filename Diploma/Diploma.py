@@ -111,7 +111,7 @@ def group_json(group_list, friend_list, version):
 def program():
     token = '5dfd6b0dee902310df772082421968f4c06443abecbc082a8440cb18910a56daca73ac8d04b25154a1128'
     version = '5.69'
-    user_id = input('Введите имя пользователя или его id')
+    user_id = input('Введите имя пользователя или его id: ')
     user_id = get_ids(user_id, version)
     friend_list = get_friends_list(user_id, version)
     group_list = get_group_list(user_id, version, token)
