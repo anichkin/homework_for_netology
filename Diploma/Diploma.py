@@ -22,7 +22,7 @@ def get_friends_list(user_id, version):
 
     response_friend = requests.get('https://api.vk.com/method/friends.get', friend_params)
     response_friend_json = response_friend.json()
-    if 'response' in response_friend_json.keys():
+    if 'response' in response_friend_json:
         friend_list = response_friend_json['response']['items']
         return friend_list
 
@@ -50,7 +50,7 @@ def response(friends_list, group, version):
     }
     response = requests.get('https://api.vk.com/method/groups.isMember', params)
     response_json = response.json()
-    if 'response' in response_json.keys():
+    if 'response' in response_json:
         for member in response_json['response']:
             if member['member']:
                 return 0
@@ -60,11 +60,11 @@ def response(friends_list, group, version):
             return group
 
 
-def unique_group(friend_list, group, version, test=0):
-    if len(friend_list) > 300:
-        split_friend_list = [friend_list[d:d + 300] for d in range(0, len(friend_list), 300)]
-        for list in split_friend_list:
-            friends_list = ((str(list)).replace('[', " ")).replace(']', " ")
+def unique_group(friend_list, group, version, test=0, chunk_size=300):
+    if len(friend_list) > chunk_size:
+        split_friend_list = [friend_list[d:d + chunk_size] for d in range(0, len(friend_list), chunk_size)]
+        for friend_list in split_friend_list:
+            friends_list = ', '.join(str(friend) for friend in friend_list)
             result = response(friends_list, group, version)
             if not result:
                 print()
@@ -79,7 +79,7 @@ def unique_group(friend_list, group, version, test=0):
             return group
 
     else:
-        friends_list = ((str(friend_list)).replace('[', " ")).replace(']', " ")
+        friends_list = ', '.join(str(friend) for friend in friend_list)
         result = response(friends_list, group, version)
         if not result:
             print()
@@ -97,7 +97,7 @@ def group_json(group_list, friend_list, version):
             group_list_for_json.append(group)
         else:
             continue
-    group_list_for_json = ((str(group_list_for_json)).replace('[', " ")).replace(']', " ")
+    group_list_for_json = ', '.join(str(group) for group in group_list_for_json)
     params = {
         'group_ids': group_list_for_json,
         'fields': 'members_count',
@@ -122,3 +122,8 @@ def program():
 
 
 program()
+# config = open('config.py', 'r')
+# token = config.readline()
+# version = config.readline()
+# print(token)
+# print(version)
