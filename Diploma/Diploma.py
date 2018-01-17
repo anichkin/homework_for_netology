@@ -1,5 +1,19 @@
 import requests
 import json
+from urllib.parse import urlencode, urljoin
+
+
+def do_request(params, method):
+    URL = 'https://api.vk.com/method/'
+    print('.', end=' ')
+    response = requests.get(urljoin(URL, method), params)
+    response.raise_for_status()
+    response_json = response.json()
+    if 'error' in response_json:
+        print(response_json)
+    if 'response' in response_json:
+        return response_json['response']
+
 
 
 def get_ids(ids, version):
@@ -7,37 +21,29 @@ def get_ids(ids, version):
         'user_ids': ids,
         'v': version
     }
-
-    response = requests.get('https://api.vk.com/method/users.get', params)
-    response_json = response.json()
-    user_id = response_json['response'][0]['id']
+    user_id = do_request(params,'users.get')[0]['id']
     return user_id
 
 
 def get_friends_list(user_id, version):
-    friend_params = {
+    params = {
         'user_id': user_id,
         'v': version
     }
+    friends_list = do_request(params, 'friends.get')['items']
+    return friends_list
 
-    response_friend = requests.get('https://api.vk.com/method/friends.get', friend_params)
-    response_friend_json = response_friend.json()
-    if 'response' in response_friend_json:
-        friend_list = response_friend_json['response']['items']
-        return friend_list
 
 
 def get_group_list(user_id, version, token):
-    group_params = {
+    params = {
         'access_token': token,
         'user_id': user_id,
         'count': 1000,
         'v': version
     }
 
-    response_group = requests.get('https://api.vk.com/method/groups.get', group_params)
-    response_group_json = response_group.json()
-    group_list = response_group_json['response']['items']
+    group_list = do_request(params, 'groups.get')['items']
     return group_list
 
 
@@ -48,16 +54,14 @@ def response(friends_list, group, version):
         'extended': 0,
         'v': version
     }
-    response = requests.get('https://api.vk.com/method/groups.isMember', params)
-    response_json = response.json()
-    if 'response' in response_json:
-        for member in response_json['response']:
-            if member['member']:
-                return 0
-            else:
-                print('.', end=' ')
-        if not member['member']:
-            return group
+    is_member = do_request(params, 'groups.isMember')
+    for member in is_member:
+        if member['member']:
+            return 0
+        else:
+            print('.', end=' ')
+    if not member['member']:
+        return group
 
 
 def unique_group(friend_list, group, version, test=0, chunk_size=300):
@@ -106,7 +110,7 @@ def group_json(group_list, friend_list, version):
     response = requests.get('https://api.vk.com/method/groups.getById', params)
     response_json = response.json()
     groups = response_json['response']
-    with open('group.json', 'w', encoding='utf-8') as f:
+    with open('group.json', 'w') as f:
         json.dump(groups, f, indent=2, ensure_ascii=False)
 
 
@@ -119,6 +123,29 @@ def program():
     group_list = get_group_list(user_id, version, token)
     group_json(group_list, friend_list, version)
     print('список уникальных групп в файле group.json')
+
+
+
+# def do_request(params, method):
+#     URL = 'https://api.vk.com/method/'
+#     response = requests.get(urljoin(URL, method), params)
+#     response.raise_for_status()
+#     response_json = response.json()
+#     if 'error' in response_json:
+#         print(response_json)
+#     if 'response' in response_json:
+#         return response_json['response']
+
+
+
+
+
+# params = {
+#         'user_id': 15590964,
+#         'v': '5.69'
+#     }
+# do_request(params,'friends.get')
+
 
 
 program()
