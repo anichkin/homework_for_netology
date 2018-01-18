@@ -125,6 +125,7 @@ def group_json(group_list, friend_list, version, json_group=[]):
     with open('group.json', 'w', encoding='UTF-8') as f:
         json.dump(json_group, f, indent=2, ensure_ascii=False)
         print('список уникальных групп в файле group.json')
+        exit()
 
 
 def program():
