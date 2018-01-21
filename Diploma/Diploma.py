@@ -113,8 +113,6 @@ def group_json(group_list, friend_list, version):
         'v': version
     }
     groups = do_request(params, 'groups.getById')
-    if not groups:
-        return 'Нет таких групп'
     for group in groups:
         group_param = {}
         group_param['name'] = group['name']
