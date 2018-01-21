@@ -16,20 +16,20 @@ def do_request(params, method):
         return do_request(params, method)
     response_json = response.json()
     if 'error' in response_json:
-        ERROR_CODE = response_json['error']['error_code']
-        ERROR_MESSAGE = response_json['error']['error_msg']
-        TOO_MANY_REQUESTS = ERROR_CODE == 6
-        ACCESS_DENIED = ERROR_CODE == 15
-        INVALID_USER_ID = ERROR_CODE == 113
+        error_code = response_json['error']['error_code']
+        error_message = response_json['error']['error_msg']
+        TOO_MANY_REQUESTS = error_code == 6
+        ACCESS_DENIED = error_code == 15
+        INVALID_USER_ID = error_code == 113
         if TOO_MANY_REQUESTS:
-            print(ERROR_MESSAGE)
+            print(error_message)
             time.sleep(1)
             return do_request(params, method)
         if ACCESS_DENIED or INVALID_USER_ID:
-            print(ERROR_MESSAGE)
+            print(error_message)
             return None
-        print(ERROR_CODE)
-        print(ERROR_MESSAGE)
+        print(error_code)
+        print(error_message)
         print(method)
         return None
     return response_json['response']
