@@ -6,6 +6,9 @@ from urllib.parse import urljoin
 
 def do_request(params, method):
     url = 'https://api.vk.com/method/'
+    TOO_MANY_REQUESTS = 6
+    ACCESS_DENIED = 15
+    INVALID_USER_ID = 113
     print('.', end=' ')
     try:
         response = requests.get(urljoin(url, method), params)
@@ -18,9 +21,6 @@ def do_request(params, method):
     if 'error' in response_json:
         error_code = response_json['error']['error_code']
         error_message = response_json['error']['error_msg']
-        TOO_MANY_REQUESTS = 6
-        ACCESS_DENIED = 15
-        INVALID_USER_ID = 113
         if error_code == TOO_MANY_REQUESTS:
             print(error_message)
             time.sleep(1)
