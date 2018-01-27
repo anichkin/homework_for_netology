@@ -3,8 +3,12 @@ import json
 import time
 from urllib.parse import urljoin
 
+TOO_MANY_REQUESTS = 6
+ACCESS_DENIED = 15
+INVALID_USER_ID = 113
 
-def do_request(params, method, TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID):
+
+def do_request(params, method):
     url = 'https://api.vk.com/method/'
     print('.', end=' ')
     try:
@@ -13,7 +17,7 @@ def do_request(params, method, TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID
     except requests.exceptions.HTTPError as err:
         print('Oops. HTTP Error occured')
         print('Response is: {content}'.format(content=err.response.content))
-        return do_request(params, method, TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID)
+        return do_request(params, method)
     response_json = response.json()
     if 'error' in response_json:
         error_code = response_json['error']['error_code']
@@ -21,7 +25,7 @@ def do_request(params, method, TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID
         if error_code == TOO_MANY_REQUESTS:
             print(error_message)
             time.sleep(1)
-            return do_request(params, method, TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID)
+            return do_request(params, method)
         if error_code == ACCESS_DENIED or error_code == INVALID_USER_ID:
             print(error_message)
             return None
@@ -32,23 +36,23 @@ def do_request(params, method, TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID
     return response_json['response']
 
 
-def get_ids(ids, version, TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID):
+def get_ids(ids, version):
     params = {
         'user_ids': ids,
         'v': version
     }
-    user_id = do_request(params, 'users.get', TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID)
+    user_id = do_request(params, 'users.get')
     if not user_id:
         return None
     return user_id[0]['id']
 
 
-def get_friends_list(user_id, version, TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID):
+def get_friends_list(user_id, version):
     params = {
         'user_id': user_id,
         'v': version
     }
-    friends_list = do_request(params, 'friends.get', TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID)
+    friends_list = do_request(params, 'friends.get')
     if not friends_list:
         print('Доступ к пользователю запрещен')
         return None
@@ -58,33 +62,33 @@ def get_friends_list(user_id, version, TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID
     return friends_list['items']
 
 
-def get_group_list(user_id, version, token, TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID):
+def get_group_list(user_id, version, token):
     params = {
         'access_token': token,
         'user_id': user_id,
         'count': 1000,
         'v': version
     }
-    group_list = do_request(params, 'groups.get', TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID)
+    group_list = do_request(params, 'groups.get')
     return group_list['items']
 
 
-def is_member(friends_list, group, version, TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID):
+def is_member(friends_list, group, version):
     params = {
         'group_id': group,
         'user_ids': friends_list,
         'extended': 0,
         'v': version
     }
-    is_member = do_request(params, 'groups.isMember', TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID)
+    is_member = do_request(params, 'groups.isMember')
     return is_member
 
 
-def unique_group(friend_list, group, version, TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID, chunk_size=300):
+def unique_group(friend_list, group, version, chunk_size=300):
     split_friend_list = [friend_list[d:d + chunk_size] for d in range(0, len(friend_list), chunk_size)]
     for friend_list in split_friend_list:
         friends_list = ', '.join(str(friend) for friend in friend_list)
-        result = is_member(friends_list, group, version, TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID)
+        result = is_member(friends_list, group, version)
         if not result:
             return None
         for member in result:
@@ -95,11 +99,11 @@ def unique_group(friend_list, group, version, TOO_MANY_REQUESTS, ACCESS_DENIED, 
     return group
 
 
-def group_json(group_list, friend_list, version, TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID):
+def group_json(group_list, friend_list, version):
     json_group = []
     group_list_for_json = []
     for group in group_list:
-        if unique_group(friend_list, group, version, TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID):
+        if unique_group(friend_list, group, version):
             group_list_for_json.append(group)
     if len(group_list_for_json) == 0:
         print('У этого пользователя нет уникальных групп')
@@ -111,7 +115,7 @@ def group_json(group_list, friend_list, version, TOO_MANY_REQUESTS, ACCESS_DENIE
         'extended': 1,
         'v': version
     }
-    groups = do_request(params, 'groups.getById', TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID)
+    groups = do_request(params, 'groups.getById')
     for group in groups:
         group_param = {}
         group_param['name'] = group['name']
@@ -125,26 +129,23 @@ def group_json(group_list, friend_list, version, TOO_MANY_REQUESTS, ACCESS_DENIE
 
 
 def program():
-    TOO_MANY_REQUESTS = 6
-    ACCESS_DENIED = 15
-    INVALID_USER_ID = 113
     file = open('config.json', 'r')
     config = json.load(file)
     token = config['token']
     version = config['version']
     user_id = input('Введите имя пользователя или его id: ')
-    user_id = get_ids(user_id, version, TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID)
+    user_id = get_ids(user_id, version)
     if not user_id:
         print('нет такого пользователя, введите заново')
         program()
-    friend_list = get_friends_list(user_id, version, TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID)
+    friend_list = get_friends_list(user_id, version)
     if not friend_list:
         program()
-    group_list = get_group_list(user_id, version, token, TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID)
+    group_list = get_group_list(user_id, version, token)
     if len(group_list) == 0:
         print('у этого пользователя нет групп')
         program()
-    group_list_for_json = group_json(group_list, friend_list, version, TOO_MANY_REQUESTS, ACCESS_DENIED, INVALID_USER_ID)
+    group_list_for_json = group_json(group_list, friend_list, version)
     if not group_list_for_json:
         program()
 
